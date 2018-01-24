@@ -13,28 +13,39 @@ function love.load()
 	-- pour avoir 32px
 	scaleImg = 0.5
 	tileWidth = img[14]:getWidth()/2
-
-
-
-	currentLevel = loadLevel(10)
-
-	
+	local leveltmp = initLevel(1)
+	initPlayer(leveltmp)
 
 
 end
 
 function love.update(dt)
 
+	collidePlayer()
+	if love.keyboard.isDown("up") then
+		player.y = player.y - player.speed
+		elseif love.keyboard.isDown("right") then
+			player.x = player.x + player.speed
+			elseif love.keyboard.isDown("down") then
+				player.y = player.y + player.speed
 
+				elseif love.keyboard.isDown("left") then
+					player.x = player.x - player.speed
 
-end
+				end
 
-function love.draw()
+				
+
+			end
+
+			function love.draw()
 
 -- afficher un font pour le style (sans importance)
 drawBack()
 drawBackLevel(currentLevel)
 drawLevel(currentLevel)
+drawPlayer(currentLevel)
+
 
 end
 
@@ -46,7 +57,69 @@ end
 
 
 
-function isInLevel(level, caseX,caseY)
+
+
+function collidePlayer()
+
+	local oldPlayerX = player.x
+	local oldPlayerY = player.y
+	
+	local typeTile = getTypeTile(currentLevel,player.x,player.y)
+	
+	if typeTile == "mur" then
+
+		player.x = oldPlayerX
+		player.y = oldPlayerY
+
+	end
+
+
+end
+
+function getTypeTile(level,x,y)
+
+
+	local lig = math.abs(math.floor(y/tileWidth))
+	local col = math.abs(math.floor(x/tileWidth))
+	local typeTile = ""
+
+	currentChar = string.char(string.byte(level[lig],col))
+
+	if currentChar == "#" then
+		typeTile = "mur"
+
+		elseif currentChar == "$" then
+			typeTile = "caisse"
+
+			elseif currentChar == "." then
+				typeTile = "cible"
+
+			end
+
+			return typeTile
+		end
+
+
+
+		function drawPlayer(level)
+
+			for ligne=1,#level do
+				for colonne=1,#level[ligne] do
+
+
+					love.graphics.draw( player.img, player.x, player.y, 0, player.sx, player.sy, player.ox, player.oy)
+
+
+
+				end
+
+			end
+
+
+		end
+
+
+		function isInLevel(level, caseX,caseY)
 	-- avoir un mur en haut et en bas
 	local currentCase = string.char(string.byte(level[caseY],caseX))
 	local boolTop = false
@@ -92,6 +165,7 @@ for ligne=1,#level do
 				elseif currentChar == "." then
 					love.graphics.draw( img[15], colonne*tileWidth, ligne*tileWidth, 0, 1, 1, 0, 0)
 
+
 				end
 
 
@@ -113,7 +187,7 @@ for ligne=1,#level do
 
 		if currentChar ~= "#" or currentChar ~= "$" then
 			if isInLevel(level, colonne, ligne) == true then
-			
+
 				love.graphics.draw( img[13], colonne*tileWidth, ligne*tileWidth, 0, scaleImg, scaleImg, 0, 0)
 			end
 
@@ -174,4 +248,41 @@ function initImage()
 	table.insert(img,love.graphics.newImage("assets/wall.png"))
 
 	return img
+end
+
+function initLevel(n)
+
+	currentLevel = loadLevel(n)
+	return currentLevel
+end
+
+function initPlayer(level)
+	player = {}
+	player.img = img[4]
+	player.x = 0 
+	player.y = 0
+	player.sx = 0.5 
+	player.sy = 0.5 
+	player.width = player.img:getWidth() * player.sx
+	player.height = player.img:getHeight() * player.sy
+	player.ox = player.width
+	player.oy = player.height
+	player.speed = 0.5 
+
+	for ligne=1,#level do
+		for colonne=1,#level[ligne] do
+
+			currentChar = string.char(string.byte(level[ligne],colonne))
+
+			if currentChar == "@" then
+
+				player.x = colonne*tileWidth + tileWidth / 2
+				player.y = ligne*tileWidth + tileWidth / 2
+
+			end
+
+
+		end
+	end
+
 end
