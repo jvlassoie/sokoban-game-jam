@@ -17,14 +17,18 @@ function love.load()
 	local leveltmp = initLevel(1)
 	initPlayer(leveltmp)
 	pressOnce = false
-
+	initCaisse(currentLevel)
 
 end
 
 function love.update(dt)
-	
-	local currentCoord = getCoord(currentLevel,player.x,player.y)
-	local transCoord
+
+	local currentCoord = getCoord(player.x,player.y)
+	local transCoord,tmpCoord,oldX,oldY
+	local direction
+
+	oldY = player.y
+	oldX = player.x
 
 	if love.keyboard.isDown("up","right","down","left") then
 
@@ -34,52 +38,88 @@ function love.update(dt)
 
 			if love.keyboard.isDown("up") then
 
-				transCoord = transformCoord(currentLevel,currentCoord.col,currentCoord.lig - 1)
+				direction = "up"
+				transCoord = transformCoord(currentCoord.col,currentCoord.lig - 1)
 				player.y = transCoord.centerY
 
 			end
 
 			if love.keyboard.isDown("right") then
 
-				transCoord = transformCoord(currentLevel,currentCoord.col + 1,currentCoord.lig)
+				direction = "right"
+				transCoord = transformCoord(currentCoord.col + 1,currentCoord.lig)
 				player.x = transCoord.centerX
 
 			end
 
 			if love.keyboard.isDown("down") then
 
-				transCoord = transformCoord(currentLevel,currentCoord.col,currentCoord.lig + 1)
+				direction = "down"
+				transCoord = transformCoord(currentCoord.col,currentCoord.lig + 1)
 				player.y = transCoord.centerY
 
 			end
 
 			if love.keyboard.isDown("left") then
 
-				transCoord = transformCoord(currentLevel,currentCoord.col - 1,currentCoord.lig)
+				direction = "left"
+				transCoord = transformCoord(currentCoord.col - 1,currentCoord.lig)
 				player.x = transCoord.centerX
 
 
 			end
 
-			pressOnce = true
+			tmpCoord = getTypeTile(currentLevel,player.x,player.y)
+
+			if tmpCoord == "mur" then
+				
+				player.x = oldX
+				player.y = oldY
+
+			end
+			
+			for i=1,#listCaisse do
+
+				if listCaisse[i].x == player.x - tileWidth/2 and listCaisse[i].y == player.y - tileWidth/2 then
+
+					if direction == "up" then
+						listCaisse[i].y = listCaisse[i].y - tileWidth 
+						elseif direction == "right" then
+							listCaisse[i].x = listCaisse[i].x + tileWidth 
+							elseif direction == "down" then
+								listCaisse[i].y = listCaisse[i].y + tileWidth 
+								elseif direction == "left" then
+									listCaisse[i].x = listCaisse[i].x - tileWidth 
+
+								end
+
+							end
+
+
+						end
+
+
+						pressOnce = true
 
 
 
-		end
+					end
 
-		else
-			pressOnce = false
-	end
+				else
+					pressOnce = false
+				end
 
 
-end
+			end
 
-function love.draw()
+			function love.draw()
 
 -- afficher un font pour le style (sans importance)
 drawBack()
 drawBackLevel(currentLevel)
-drawLevel(currentLevel)
+drawLevelDoor(currentLevel)
+drawLevelTarget(currentLevel)
+drawLevelCaisse(currentLevel)
 drawPlayer(currentLevel)
 
 
@@ -95,37 +135,41 @@ end
 
 
 
-function collidePlayer()
+-- function collidePlayer()
 
-	local oldPlayerX = player.x
-	local oldPlayerY = player.y
-	
-	local typeTile = getTypeTile(currentLevel,player.x,player.y)
-	
-	if typeTile == "mur" then
+-- 	local oldPlayerX = player.x
+-- 	local oldPlayerY = player.y
 
-		player.x = oldPlayerX
-		player.y = oldPlayerY
+-- 	local typeTile = getTypeTile(currentLevel,player.x,player.y)
 
-	end
+-- 	if typeTile == "mur" then
 
+-- 		player.x = oldPlayerX
+-- 		player.y = oldPlayerY
 
-end
+-- 	end
 
 
-function transformCoord(level,col,lig)
+-- end
+
+
+function transformCoord(col,lig)
 --donne coord en fonction de la ligne et la colonne
 local coord = {}
 
 coord.centerX = col * tileWidth + tileWidth /2
 coord.centerY = lig * tileWidth + tileWidth / 2
+coord.col = col
+coord.lig = lig
+coord.x = col * tileWidth
+coord.y = lig * tileWidth
 
 return coord
 
 end
 
 
-function getCoord(level,x,y)
+function getCoord(x,y)
 
 	local coord = {}
 	coord.lig = math.abs(math.floor(y/tileWidth))
@@ -140,7 +184,7 @@ function getCoord(level,x,y)
 end
 
 
-function getTypeTile(level,x,y)
+function getTypeTile(level,x,y,isCoord)
 
 
 	local lig = math.abs(math.floor(y/tileWidth))
@@ -152,38 +196,35 @@ function getTypeTile(level,x,y)
 	if currentChar == "#" then
 		typeTile = "mur"
 
-		elseif currentChar == "$" then
-			typeTile = "caisse"
+		elseif currentChar == "." then
+			typeTile = "cible"
 
-			elseif currentChar == "." then
-				typeTile = "cible"
-
-			end
-
-			return typeTile
 		end
 
-
-
-		function drawPlayer(level)
-
-			for ligne=1,#level do
-				for colonne=1,#level[ligne] do
-
-
-					love.graphics.draw( player.img, player.x, player.y, 0, player.sx, player.sy, player.ox, player.oy)
+		return typeTile
+	end
 
 
 
-				end
+	function drawPlayer(level)
+
+		for ligne=1,#level do
+			for colonne=1,#level[ligne] do
+
+
+				love.graphics.draw( player.img, player.x, player.y, 0, player.sx, player.sy, player.ox, player.oy)
+
+
 
 			end
-
 
 		end
 
 
-		function isInLevel(level, caseX,caseY)
+	end
+
+
+	function isInLevel(level, caseX,caseY)
 	-- avoir un mur en haut et en bas
 	local currentCase = string.char(string.byte(level[caseY],caseX))
 	local boolTop = false
@@ -210,7 +251,37 @@ function getTypeTile(level,x,y)
 
 end
 
-function drawLevel(level)
+function drawLevelCaisse(level)
+
+	for i=1,#listCaisse do
+		love.graphics.draw( img[11], listCaisse[i].x, listCaisse[i].y, 0, scaleImg, scaleImg, 0, 0)
+	end
+
+end
+
+function drawLevelTarget(level)
+
+-- string byte pour prendre le code ASCII et ensuite string.char pour convertir celui-ci en charactère
+local currentChar
+
+for ligne=1,#level do
+	for colonne=1,#level[ligne] do
+
+		currentChar = string.char(string.byte(level[ligne],colonne))
+
+		
+		if currentChar == "." then
+			love.graphics.draw( img[15], colonne*tileWidth, ligne*tileWidth, 0, 1, 1, 0, 0)
+
+
+		end
+
+
+	end
+end
+end
+
+function drawLevelDoor(level)
 
 -- string byte pour prendre le code ASCII et ensuite string.char pour convertir celui-ci en charactère
 local currentChar
@@ -223,22 +294,14 @@ for ligne=1,#level do
 		if currentChar == "#" then
 			love.graphics.draw( img[16], colonne*tileWidth, ligne*tileWidth, 0, scaleImg, scaleImg, 0, 0)
 
-			elseif currentChar == "$" then
-				love.graphics.draw( img[11], colonne*tileWidth, ligne*tileWidth, 0, scaleImg, scaleImg, 0, 0)
-
-				elseif currentChar == "." then
-					love.graphics.draw( img[15], colonne*tileWidth, ligne*tileWidth, 0, 1, 1, 0, 0)
-
-
-				end
-
-
-			end
+			
 		end
-
 	end
 
-	function drawBackLevel(level)
+end
+end
+
+function drawBackLevel(level)
 
 -- string byte pour prendre le code ASCII et ensuite string.char pour convertir celui-ci en charactère
 local currentChar
@@ -348,5 +411,34 @@ function initPlayer(level)
 
 		end
 	end
+
+end
+
+
+function initCaisse(level)
+
+	listCaisse = {}
+
+
+	for ligne=1,#level do
+		for colonne=1,#level[ligne] do
+
+			currentChar = string.char(string.byte(level[ligne],colonne))
+
+
+			if currentChar == "$" then
+
+				local caisse = {}
+				caisse.x = colonne*tileWidth
+				caisse.y = ligne*tileWidth
+
+				table.insert(listCaisse, caisse )
+
+			end
+
+
+		end
+	end
+
 
 end
