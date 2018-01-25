@@ -15,6 +15,8 @@ function love.load()
 	scaleImg = 0.5
 	tileWidth = img[5]:getWidth()/2
 	initGame()
+	local fileLevels = love.filesystem.getDirectoryItems("levels")
+	local nbFileLevels = #fileLevels
 
 end
 
@@ -500,15 +502,17 @@ function updateGame()
 				end
 				if nbCible == #listCible then
 					print("c'est gagné")
+					if numeroLevel <= nbFileLevels then
 					numeroLevel = numeroLevel + 1
 					initGame(numeroLevel)
+					end
 				end
 
 			end
 
 			function initGame(n)
 				if n == nil then
-				    numeroLevel = 1
+					numeroLevel = 1
 				end
 				local leveltmp = initLevel(numeroLevel)
 				initPlayer(leveltmp)
