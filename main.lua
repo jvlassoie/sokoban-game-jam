@@ -26,6 +26,7 @@ function love.update(dt)
 	local currentCoord = getCoord(player.x,player.y)
 	local transCoord,tmpCoord,oldX,oldY
 	local direction
+	local radarCaisse
 
 	oldY = player.y
 	oldX = player.x
@@ -82,17 +83,46 @@ function love.update(dt)
 
 				if listCaisse[i].x == player.x - tileWidth/2 and listCaisse[i].y == player.y - tileWidth/2 then
 
+					oldCX = listCaisse[i].x
+					oldCY = listCaisse[i].y
+					local prevCaisseX = 0
+					local prevCaisseY = 0
+					local boolC = 0
+
 					if direction == "up" then
 						listCaisse[i].y = listCaisse[i].y - tileWidth 
+						prevCaisseY = -1
 						elseif direction == "right" then
 							listCaisse[i].x = listCaisse[i].x + tileWidth 
+							prevCaisseX = 1
 							elseif direction == "down" then
 								listCaisse[i].y = listCaisse[i].y + tileWidth 
+								prevCaisseY = 1
 								elseif direction == "left" then
 									listCaisse[i].x = listCaisse[i].x - tileWidth 
+									prevCaisseX = -1
 
 								end
 
+
+								tmpCoord = getTypeTile(currentLevel,listCaisse[i].x,listCaisse[i].y)
+								
+								for e=1,#listCaisse do
+									
+									if listCaisse[e].x == listCaisse[i].x and listCaisse[e].y == listCaisse[i].y then
+
+										boolC = boolC + 1
+
+									end
+								
+								end
+							
+								if tmpCoord == "mur" or boolC > 1  then
+									listCaisse[i].x = oldCX 
+									listCaisse[i].y = oldCY 
+									player.x = oldX
+									player.y = oldY
+								end
 							end
 
 
@@ -133,26 +163,6 @@ end
 
 
 
-
-
--- function collidePlayer()
-
--- 	local oldPlayerX = player.x
--- 	local oldPlayerY = player.y
-
--- 	local typeTile = getTypeTile(currentLevel,player.x,player.y)
-
--- 	if typeTile == "mur" then
-
--- 		player.x = oldPlayerX
--- 		player.y = oldPlayerY
-
--- 	end
-
-
--- end
-
-
 function transformCoord(col,lig)
 --donne coord en fonction de la ligne et la colonne
 local coord = {}
@@ -184,6 +194,19 @@ function getCoord(x,y)
 end
 
 
+function detectCaisse(x,y)
+
+for i=1,#listCaisse do
+	
+	if listCaisse[i].x == x and listCaisse[i].y == y then
+	    return "caisse"
+	end
+
+end
+
+end
+
+
 function getTypeTile(level,x,y,isCoord)
 
 
@@ -196,35 +219,35 @@ function getTypeTile(level,x,y,isCoord)
 	if currentChar == "#" then
 		typeTile = "mur"
 
-		elseif currentChar == "." then
-			typeTile = "cible"
-
-		end
-
-		return typeTile
-	end
-
-
-
-	function drawPlayer(level)
-
-		for ligne=1,#level do
-			for colonne=1,#level[ligne] do
-
-
-				love.graphics.draw( player.img, player.x, player.y, 0, player.sx, player.sy, player.ox, player.oy)
-
-
+			elseif currentChar == "." then
+				typeTile = "cible"
 
 			end
 
+			return typeTile
 		end
 
 
-	end
+
+		function drawPlayer(level)
+
+			for ligne=1,#level do
+				for colonne=1,#level[ligne] do
 
 
-	function isInLevel(level, caseX,caseY)
+					love.graphics.draw( player.img, player.x, player.y, 0, player.sx, player.sy, player.ox, player.oy)
+
+
+
+				end
+
+			end
+
+
+		end
+
+
+		function isInLevel(level, caseX,caseY)
 	-- avoir un mur en haut et en bas
 	local currentCase = string.char(string.byte(level[caseY],caseX))
 	local boolTop = false
