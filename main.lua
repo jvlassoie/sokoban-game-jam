@@ -23,6 +23,7 @@ end
 function love.update(dt)
 
 	updateGame()
+
 end
 
 function love.draw()
@@ -34,6 +35,7 @@ drawLevelDoor(currentLevel)
 drawLevelTarget(currentLevel)
 drawLevelCaisse(currentLevel)
 drawPlayer(currentLevel)
+buttonRestart()
 
 
 end
@@ -501,13 +503,13 @@ function updateGame()
 					end
 				end
 
-					
+
 				if nbCible == #listCible then
-					print("c'est gagné")
+					
 
 					if numeroLevel <= nbFileLevels then
-					numeroLevel = numeroLevel + 1
-					initGame(numeroLevel)
+						numeroLevel = numeroLevel + 1
+						initGame(numeroLevel)
 					end
 				end
 
@@ -523,4 +525,20 @@ function updateGame()
 				initCaisse(currentLevel)
 				initCible(currentLevel)
 
+			end
+
+			function buttonRestart()
+				if love.mouse.isDown(1) and 
+					love.mouse.getX() >= 800 and 
+					love.mouse.getX() <= 950 and 
+					love.mouse.getY() >= 640 and 
+					love.mouse.getY() <= 700 then 
+					initGame(numeroLevel)
+				end
+
+				love.graphics.setColor(26, 188, 156)
+				love.graphics.rectangle("fill", 800, 640, 150, 60 )
+				love.graphics.setColor(0, 0, 0)
+				love.graphics.print("Restart Level", 835, 660)
+				love.graphics.setColor(255, 255, 255)
 			end
