@@ -1,4 +1,5 @@
 io.stdout:setvbuf('no')
+if arg[#arg] == "-debug" then require("mobdebug").start() end
 
 love.graphics.setDefaultFilter("nearest")
 
@@ -15,30 +16,65 @@ function love.load()
 	tileWidth = img[14]:getWidth()/2
 	local leveltmp = initLevel(1)
 	initPlayer(leveltmp)
+	pressOnce = false
 
 
 end
 
 function love.update(dt)
+	
+	local currentCoord = getCoord(currentLevel,player.x,player.y)
+	local transCoord
 
-	collidePlayer()
-	if love.keyboard.isDown("up") then
-		player.y = player.y - player.speed
-		elseif love.keyboard.isDown("right") then
-			player.x = player.x + player.speed
-			elseif love.keyboard.isDown("down") then
-				player.y = player.y + player.speed
+	if love.keyboard.isDown("up","right","down","left") then
 
-				elseif love.keyboard.isDown("left") then
-					player.x = player.x - player.speed
 
-				end
+		if pressOnce == false then
 
-				
+
+			if love.keyboard.isDown("up") then
+
+				transCoord = transformCoord(currentLevel,currentCoord.col,currentCoord.lig - 1)
+				player.y = transCoord.centerY
 
 			end
 
-			function love.draw()
+			if love.keyboard.isDown("right") then
+
+				transCoord = transformCoord(currentLevel,currentCoord.col + 1,currentCoord.lig)
+				player.x = transCoord.centerX
+
+			end
+
+			if love.keyboard.isDown("down") then
+
+				transCoord = transformCoord(currentLevel,currentCoord.col,currentCoord.lig + 1)
+				player.y = transCoord.centerY
+
+			end
+
+			if love.keyboard.isDown("left") then
+
+				transCoord = transformCoord(currentLevel,currentCoord.col - 1,currentCoord.lig)
+				player.x = transCoord.centerX
+
+
+			end
+
+			pressOnce = true
+
+
+
+		end
+
+		else
+			pressOnce = false
+	end
+
+
+end
+
+function love.draw()
 
 -- afficher un font pour le style (sans importance)
 drawBack()
@@ -75,6 +111,34 @@ function collidePlayer()
 
 
 end
+
+
+function transformCoord(level,col,lig)
+--donne coord en fonction de la ligne et la colonne
+local coord = {}
+
+coord.centerX = col * tileWidth + tileWidth /2
+coord.centerY = lig * tileWidth + tileWidth / 2
+
+return coord
+
+end
+
+
+function getCoord(level,x,y)
+
+	local coord = {}
+	coord.lig = math.abs(math.floor(y/tileWidth))
+	coord.col = math.abs(math.floor(x/tileWidth))
+	
+	coord.centerX = coord.col * tileWidth
+	coord.centerY = coord.lig * tileWidth
+
+
+	return coord
+
+end
+
 
 function getTypeTile(level,x,y)
 
@@ -272,7 +336,7 @@ function initPlayer(level)
 	for ligne=1,#level do
 		for colonne=1,#level[ligne] do
 
-			currentChar = string.char(string.byte(level[ligne],colonne))
+			local currentChar = string.char(string.byte(level[ligne],colonne))
 
 			if currentChar == "@" then
 
