@@ -36,6 +36,8 @@ drawLevelTarget(currentLevel)
 drawLevelCaisse(currentLevel)
 drawPlayer(currentLevel)
 buttonRestart()
+drawNiveau()
+transitLevelDrawColor()
 
 
 end
@@ -516,6 +518,7 @@ function updateGame()
 			end
 
 			function initGame(n)
+				clignote = 0
 				if n == nil then
 					numeroLevel = 1
 				end
@@ -526,7 +529,26 @@ function updateGame()
 				initCible(currentLevel)
 
 			end
+			
+			function drawNiveau()
 
+
+				love.graphics.print("Level: "..numeroLevel.." sur "..nbFileLevels, 600, 660)
+
+			end
+
+			function transitLevelDrawColor()
+
+				if clignote <= 255 then
+				clignote = clignote + 1
+				love.graphics.setColor(clignote, clignote, clignote)
+				love.graphics.setColor(clignote, clignote, clignote)
+				end
+				
+				
+				
+			end
+			
 			function buttonRestart()
 				if love.mouse.isDown(1) and 
 					love.mouse.getX() >= 800 and 
