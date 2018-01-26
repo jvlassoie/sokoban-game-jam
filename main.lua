@@ -6,8 +6,17 @@ love.graphics.setDefaultFilter("nearest")
 
 function love.load()
 
+	state = "menu"
+	menuRot = 0
+	menuRotSpeed = 0.06
+	menuSizeFont = 20
+	cmpSizeFont = 0
+
 	largeur = love.graphics.getWidth()
 	hauteur = love.graphics.getHeight()
+
+	menuImage = love.graphics.newImage("assets/SokobanMenu.png")
+	menuImageTitle = love.graphics.newImage("assets/title.png")
 
 	img = initImage()
 
@@ -22,29 +31,66 @@ end
 
 function love.update(dt)
 
-	updateGame()
+	if state == "game" then
 
-end
+		updateGame()
 
-function love.draw()
+		elseif state == "menu" then
+
+			menuRot = menuRot + menuRotSpeed
+
+			if menuRot >= 3 and menuRot > 0 then
+
+				menuRotSpeed = -menuRotSpeed
+				menuSizeFont = menuSizeFont - 2
+
+				elseif menuRot <= -3 and menuRot < 0 then
+
+					menuRotSpeed = -menuRotSpeed
+					menuSizeFont = menuSizeFont + 2
+
+				end
+
+
+			end
+
+		end
+
+		function love.draw()
 
 -- afficher un font pour le style (sans importance)
-drawBack()
-drawBackLevel(currentLevel)
-drawLevelDoor(currentLevel)
-drawLevelTarget(currentLevel)
-drawLevelCaisse(currentLevel)
-drawPlayer(currentLevel)
-buttonRestart()
-drawNiveau()
-transitLevelDrawColor()
+if state == "game" then
+	love.graphics.setNewFont(14)
 
+	drawBack()
+	drawBackLevel(currentLevel)
+	drawLevelDoor(currentLevel)
+	drawLevelTarget(currentLevel)
+	drawLevelCaisse(currentLevel)
+	drawPlayer(currentLevel)
+	buttonRestart()
+	drawNiveau()
+	transitLevelDrawColor()
+
+	elseif state == "menu" then
+
+		love.graphics.setNewFont("font/emulogic.ttf", menuSizeFont)
+
+		love.graphics.draw( menuImage, 0, 0, 0, 1, 1)
+		love.graphics.draw( menuImageTitle, largeur/2, 300, math.rad(menuRot), 1, 1,290,95)
+		love.graphics.print("Press Space", 400, 500)
+
+	end
 
 end
 
 function love.keypressed(key)
 
-	-- print(key)
+	if key == "space" and state == "menu" then
+
+		state = "game"
+
+	end
 
 end
 
@@ -518,6 +564,7 @@ function updateGame()
 			end
 
 			function initGame(n)
+
 				clignote = 0
 				if n == nil then
 					numeroLevel = 1
@@ -540,9 +587,9 @@ function updateGame()
 			function transitLevelDrawColor()
 
 				if clignote <= 255 then
-				clignote = clignote + 1
-				love.graphics.setColor(clignote, clignote, clignote)
-				love.graphics.setColor(clignote, clignote, clignote)
+					clignote = clignote + 1
+					love.graphics.setColor(clignote, clignote, clignote)
+					love.graphics.setColor(clignote, clignote, clignote)
 				end
 				
 				
